@@ -196,3 +196,12 @@ input {
   width: auto;
   margin-left: 0;
 }
+
+.users {
+  list-style: none;
+  magin: 0;
+  li {
+    overflow: auto;
+    border-bottom: 1px solid $gray-lighter;
+  }
+}

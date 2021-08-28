@@ -15,7 +15,7 @@ module SessionsHelper
   # 現在ログインしているユーザーを返す（いる場合）
   def current_user
     if(user_id = session[:user_id])
-      @current_user ||= User.find_by(id: user_id)
+      @current_user ||= User.find_by(id: user_id) # @current_userがnilであれば右の式を代入
     elsif (user_id = cookies.signed[:user_id])
       user = User.find_by(id: user_id)
       if user && user.authenticated?(cookies[:remember_token])
@@ -23,6 +23,11 @@ module SessionsHelper
         @current_user = user
       end
     end
+  end
+
+  # userのnilガード
+  def current_user?(user)
+    user && user == current_user # userがtrueであれば右式の結果が返る
   end
 
   # ユーザーがログインしていればtrue、その他ならfalseを返す
@@ -42,5 +47,17 @@ module SessionsHelper
     forget(current_user)
     session.delete(:user_id)
     @current_user = nil
+  end
+
+  # 記憶したURL(もしくはデフォルト値)にリダイレクト
+  def redirect_back_or(default)
+    redirect_to(session[:forwarding_url] || default) # session[:forwarding_url]はアクセスしようとしたurl
+    session.delete(:forwarding_url)
+  end
+
+  # アクセスしようとしたURLを覚えておく
+  def store_location
+    # getリクエストが行われた時だけsession[:forwarding_url]を格納する
+    session[:forwarding_url] = request.original_url if request.get?
   end
 end
